@@ -32,19 +32,28 @@ input.bad{border-color:#B8543F;animation:nudge .3s}
   margin:6px 0 6px}
 .sub{font-size:13px;line-height:1.8;color:#8FA0B0;margin-bottom:8px}
 
-/* film strip */
+/* photo date hunt */
 #strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0 8px}
 @media(max-width:560px){#strip{grid-template-columns:repeat(2,1fr)}}
 .frame{position:relative;border:1px solid var(--line);border-radius:3px;overflow:hidden;
-  background:#0d1a26;aspect-ratio:3/4;cursor:default}
-.frame img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.92) contrast(1.02)}
-.frame .ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  background:#0d1a26;cursor:default;transition:border-color .25s,transform .25s}
+.frame.reveal{border-color:var(--amber);transform:translateY(-2px)}
+.photo{position:relative;aspect-ratio:3/4;overflow:hidden}
+.photo img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.92) contrast(1.02)}
+.photo .ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
   color:#33465A;font-size:10px;letter-spacing:.1em;text-align:center;padding:8px}
-.frame .date{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(transparent,#060D14ee);
-  color:var(--amber);font-size:12px;letter-spacing:.08em;padding:14px 8px 6px;text-align:center;
-  opacity:0;transition:opacity .4s}
-.frame.reveal .date{opacity:1}
-.frame .idx{position:absolute;top:5px;left:6px;font-size:9px;color:var(--dim)}
+.frame .idx{position:absolute;z-index:2;top:6px;left:7px;padding:3px 5px;border-radius:8px;
+  background:#fff9;color:#665266;font-size:9px}
+.date-entry{display:flex;align-items:center;justify-content:center;gap:4px;padding:9px 5px;background:var(--cell)}
+.date-entry input{width:34px;min-width:0;border:0;border-bottom:1px solid var(--line);background:transparent;
+  color:var(--mist);font:600 12px "IBM Plex Mono",monospace;text-align:center;padding:4px 1px}
+.date-entry input:focus{outline:none;border-color:var(--amber)}
+.date-entry span{color:var(--dim);font-size:10px}
+.date-ok{width:27px;height:27px;border:1px solid var(--line);border-radius:50%;background:none;color:var(--amber);
+  font:600 12px "IBM Plex Mono",monospace;cursor:pointer;padding:0}
+.date-ok:hover{border-color:var(--amber)}
+.found{padding:12px 5px;background:var(--cell);color:var(--amber);font-size:11px;letter-spacing:.08em;text-align:center}
+.frame.wrong{animation:nudge .3s}
 
 /* worksheet */
 .work{border-top:1px solid var(--line);margin-top:18px;padding-top:22px;display:none}
@@ -91,7 +100,7 @@ a.ghost:hover{border-color:var(--amber);color:var(--amber)}
 
 <header>
   <span class="eyebrow">BIRTHDAY QUEST · 04 / 05</span>
-  <span class="counter" id="score">8 FRAMES</span>
+  <span class="counter" id="score">0 / 8 DATED</span>
 </header>
 
 <main>
@@ -103,19 +112,21 @@ a.ghost:hover{border-color:var(--amber);color:var(--amber)}
 
   <div id="body" style="display:none">
     <div class="intro">Eight frames from one year.</div>
-    <p class="sub">Tap each one to develop it — the date it was taken will surface in the corner.
-    You'll need those numbers.</p>
+    <p class="sub">Find the original date of each photo in your camera roll. Enter its month and day
+    underneath — nothing here will reveal them for you.</p>
 
     <div id="strip"></div>
 
     <div class="work" id="work">
       <div class="tag">THE ARITHMETIC</div>
       <div class="eq">
-        Add up every <b>day</b> in the corners: <span id="daysList" class="amber"></span><br>
-        &nbsp;&nbsp;→ that's <b id="daySum">?</b>. Too big for a calendar. Keep subtracting
-        <b>31</b> until it fits.<br><br>
-        Add up every <b>month</b>: <span id="monsList" class="amber"></span><br>
-        &nbsp;&nbsp;→ that's <b id="monSum">?</b>. Keep subtracting <b>12</b> until it fits.
+        Let <b>M</b> be the sum of all the <b>month</b> numbers:<br>
+        <span id="monsList" class="amber"></span> &nbsp;→&nbsp; <b>M = <span id="monSum">?</span></b><br><br>
+        Let <b>D</b> be the sum of all the <b>day</b> numbers:<br>
+        <span id="daysList" class="amber"></span> &nbsp;→&nbsp; <b>D = <span id="daySum">?</span></b><br><br>
+        Now cross the calendar: months borrow <b>31</b>, days borrow <b>12</b>.<br>
+        <b>MONTH</b> = M − (2 × 31) = ?<br>
+        <b>DAY</b> = D − (9 × 12) = ?
       </div>
       <div class="row">
         <label>MONTH</label>
@@ -130,8 +141,8 @@ a.ghost:hover{border-color:var(--amber);color:var(--amber)}
 
     <div id="done">
       <div class="cal">
-        <div class="m" id="calM">SEPTEMBER</div>
-        <div class="d" id="calD">7</div>
+        <div class="m" id="calM">JULY</div>
+        <div class="d" id="calD">23</div>
         <div class="w">GO OPEN THAT PAGE</div>
       </div>
       <div class="tail" id="tail"></div>
@@ -145,8 +156,7 @@ a.ghost:hover{border-color:var(--amber);color:var(--amber)}
 const CONFIG = {
   ENTRY : "HI",     // the greeting found in the album
   NEXT_URL : "mailbox.html",
-  /* ▼ put your 8 photo URLs here (upload to any image host).
-     Leave "" to show a labelled placeholder that still reveals the date. */
+  /* The date stays hidden until the player finds and enters it. */
   PHOTOS : [
     { url:"../photos/1_2025-08-29_kitchen.jpg", date:[2025, 8,29], cap:"kitchen · peace sign" },
     { url:"../photos/2_2025-10-05_mcdonalds.jpg", date:[2025,10, 5], cap:"mcdonald's" },
@@ -165,13 +175,13 @@ const MONTHNAME=["","JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE","JULY","AU
 const $=s=>document.getElementById(s);
 const norm=v=>(v||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
 
-// compute the answer straight from the data (no magic numbers)
+// M is the month sum; D is the day sum.
 const days = CONFIG.PHOTOS.map(p=>p.date[2]);
 const mons = CONFIG.PHOTOS.map(p=>p.date[1]);
 const daySum = days.reduce((a,b)=>a+b,0);
 const monSum = mons.reduce((a,b)=>a+b,0);
-let ansD = daySum; while(ansD>31) ansD-=31;
-let ansM = monSum; while(ansM>12) ansM-=12;
+const ansM = monSum - (2 * 31); // 69 - 62 = 7
+const ansD = daySum - (9 * 12); // 131 - 108 = 23
 
 let revealed=0;
 function buildStrip(){
@@ -179,27 +189,38 @@ function buildStrip(){
   CONFIG.PHOTOS.forEach((p,i)=>{
     const f=document.createElement("div"); f.className="frame";
     const dstr=MON[p.date[1]]+" "+String(p.date[2]).padStart(2,"0");
-    f.innerHTML=`<span class="idx">${String(i+1).padStart(2,"0")}</span>`+
+    f.innerHTML=`<div class="photo"><span class="idx">${String(i+1).padStart(2,"0")}</span>`+
       (p.url ? `<img src="${p.url}" alt="">`
-             : `<div class="ph">${p.cap}<br>(photo ${i+1})</div>`)+
-      `<div class="date">${dstr}</div>`;
-    f.onclick=()=>{
+             : `<div class="ph">${p.cap}<br>(photo ${i+1})</div>`)+`</div>`+
+      `<div class="date-entry"><input class="month" inputmode="numeric" maxlength="2" placeholder="MM" aria-label="photo ${i+1} month"><span>/</span><input class="day" inputmode="numeric" maxlength="2" placeholder="DD" aria-label="photo ${i+1} day"><button class="date-ok" aria-label="check photo ${i+1} date">✓</button></div>`;
+    f.querySelectorAll("input").forEach(el=>el.addEventListener("input",()=>{
+      el.value=el.value.replace(/\D/g,"").slice(0,2);
+    }));
+    f.querySelector(".date-ok").onclick=()=>{
       if(f.classList.contains("reveal")) return;
-      f.classList.add("reveal"); revealed++;
-      $("score").textContent=revealed+" / 8 DEVELOPED";
-      if(revealed===CONFIG.PHOTOS.length) openWork();
+      const m=parseInt(f.querySelector(".month").value,10);
+      const d=parseInt(f.querySelector(".day").value,10);
+      if(m===p.date[1]&&d===p.date[2]){
+        f.classList.add("reveal");
+        f.querySelector(".date-entry").outerHTML=`<div class="found">${dstr} · FOUND ✓</div>`;
+        revealed++;
+        $("score").textContent=revealed+" / 8 DATED";
+        if(revealed===CONFIG.PHOTOS.length) openWork();
+      } else {
+        f.classList.add("wrong");setTimeout(()=>f.classList.remove("wrong"),400);
+      }
     };
     strip.appendChild(f);
   });
 }
 
 function openWork(){
-  $("daysList").textContent = days.join(" + ") + " = " + daySum;
-  $("monsList").textContent = mons.join(" + ") + " = " + monSum;
+  $("daysList").textContent = days.join(" + ");
+  $("monsList").textContent = mons.join(" + ");
   $("daySum").textContent = daySum;
   $("monSum").textContent = monSum;
   $("work").classList.add("on");
-  $("msg").textContent="Two little sums. Both answers hide in the corners.";
+  $("msg").textContent="You found every date. Now let M and D do the rest.";
   $("work").scrollIntoView({behavior:"smooth",block:"center"});
 }
 
@@ -221,8 +242,8 @@ $("solve").onclick=()=>{
     $("done").scrollIntoView({behavior:"smooth",block:"center"});
   } else {
     let h="";
-    if(m!==ansM) h="Month's not right yet — "+monSum+" minus 12, and again if it's still over 12. ";
-    if(d!==ansD) h+="Day's not right yet — "+daySum+", take away 31 until it lands on the calendar.";
+    if(m!==ansM) h="For the month, use M = "+monSum+" in M − (2 × 31). ";
+    if(d!==ansD) h+="For the day, use D = "+daySum+" in D − (9 × 12).";
     $("hint").textContent=h;
     [$("inM"),$("inD")].forEach(el=>{el.classList.add("bad");setTimeout(()=>el.classList.remove("bad"),400)});
   }
@@ -234,7 +255,7 @@ $("key").addEventListener("input",e=>{
   if(norm(e.target.value)===CONFIG.ENTRY){
     $("gate").style.display="none";
     $("body").style.display="block";
-    $("msg").textContent="Tap all eight to develop them.";
+    $("msg").textContent="Find each photo in your camera roll and enter its month and day.";
     buildStrip();
   }
 });
@@ -245,7 +266,12 @@ function skip(){
     $("gate").style.display="none";$("body").style.display="block";buildStrip();return;
   }
   if(!$("work").classList.contains("on")){
-    document.querySelectorAll(".frame:not(.reveal)").forEach(f=>f.click());return;
+    document.querySelectorAll(".frame").forEach((f,i)=>{
+      if(f.classList.contains("reveal")) return;
+      const p=CONFIG.PHOTOS[i];
+      f.querySelector(".month").value=p.date[1];f.querySelector(".day").value=p.date[2];
+      f.querySelector(".date-ok").click();
+    });return;
   }
   $("inM").value=ansM; $("inD").value=ansD; $("solve").click();
 }
