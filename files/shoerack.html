@@ -44,6 +44,8 @@ main{width:100%;max-width:620px;display:flex;flex-direction:column;gap:22px}
 .sq.ring:after{content:"";position:absolute;inset:9%;border:1px solid #E4B57D55;border-radius:50%;
   pointer-events:none}
 .sq.hit input{color:var(--amber)}
+.sq.seed{box-shadow:inset 0 0 0 2px #E4B57D66}
+.sq.seed input{color:var(--amber)}
 #ring{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0;
   transition:opacity 1s ease}
 #ring.on{opacity:1}
@@ -203,6 +205,15 @@ function build(){
       ol.appendChild(li);
     });
   });
+  const seeded=new Set();
+  entries.forEach(e=>{
+    const id=e.r+","+e.c;
+    if(seeded.has(id)) return;
+    cells[id].value=GRID[e.r][e.c];
+    cells[id].parentElement.classList.add("seed");
+    seeded.add(id);
+  });
+  check();
 }
 
 let cur=[0,0], dir="A";
@@ -281,7 +292,7 @@ function open(){
   if($("wrap").classList.contains("on")) return;
   $("gate").style.display="none";
   $("wrap").classList.add("on"); $("clues").classList.add("on");
-  $("msg").textContent="Eight squares are circled. They are not there for decoration.";
+  $("msg").textContent="Every word has its first letter waiting for you. Eight squares are circled for a reason.";
   build(); highlight();
 }
 $("key").addEventListener("input",e=>{
