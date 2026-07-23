@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Birthday Quest · Album</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0B1622;--amber:#E4B57D;--mist:#D7DEE6;--dim:#5C6B7C;--line:#22323F;--cell:#12212F}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100%;background:var(--ink);color:var(--mist);font-family:"IBM Plex Mono",monospace;
+  display:flex;flex-direction:column;align-items:center;padding:30px 16px 80px;gap:20px;
+  -webkit-tap-highlight-color:transparent}
+header{width:100%;max-width:560px;display:flex;align-items:baseline;justify-content:space-between}
+.eyebrow{font-size:11px;letter-spacing:.22em;color:var(--amber)}
+.counter{font-size:11px;letter-spacing:.1em;color:var(--dim)}
+main{width:100%;max-width:560px}
+
+.seg{display:none}
+.seg.on{display:block;animation:rise .6s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.tag{font-size:10px;letter-spacing:.26em;color:var(--amber);margin-bottom:14px}
+h2{font-family:"Instrument Serif",serif;font-weight:400;font-size:clamp(26px,7vw,40px);
+  line-height:1.05;margin-bottom:18px}
+.lead{font-size:14px;line-height:1.85;color:#8FA0B0;margin-bottom:22px}
+.lead i{color:var(--mist);font-style:italic}
+
+/* morse player */
+.player{display:flex;flex-direction:column;gap:16px;margin-bottom:24px}
+#lamp,.lamp2{width:100%;height:74px;border:1px solid var(--line);border-radius:3px;background:#060D14;
+  display:flex;align-items:center;justify-content:center;transition:none;position:relative;overflow:hidden}
+.lamp-core{width:46px;height:46px;border-radius:50%;background:#101E2A;transition:background .04s linear,box-shadow .04s linear}
+.lamp-core.hi{background:var(--amber);box-shadow:0 0 40px 8px #E4B57Daa}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+button.go{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.12em;color:var(--mist);
+  background:none;border:1px solid var(--line);padding:11px 18px;border-radius:2px;cursor:pointer}
+button.go:hover{border-color:var(--amber);color:var(--amber)}
+button.go:disabled{opacity:.4;cursor:default}
+.morse-txt{font-size:20px;letter-spacing:.12em;color:var(--dim);word-spacing:8px;user-select:all}
+.slash{color:#33465A}
+
+input.txt{background:var(--cell);border:1px solid var(--line);color:var(--mist);font:inherit;
+  font-size:16px;letter-spacing:.34em;text-transform:uppercase;padding:12px 14px;border-radius:2px;
+  width:100%;max-width:280px}
+input.txt:focus{outline:none;border-color:var(--amber)}
+input.bad{border-color:#B8543F;animation:nudge .3s}
+@keyframes nudge{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px}
+
+/* jianpu */
+.staff{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0 22px;font-family:"IBM Plex Mono",monospace}
+.note{width:38px;height:52px;border:1px solid var(--line);border-radius:2px;background:var(--cell);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;
+  transition:border-color .15s,background .15s}
+.note:hover{border-color:var(--amber)}
+.note .d{font-size:20px;color:var(--mist)}
+.note .l{font-size:12px;color:var(--amber);min-height:14px;letter-spacing:.05em}
+.note.dot-lo .d:after{content:"·";position:relative;top:6px}
+.cipher{font-size:11px;color:var(--dim);line-height:2;margin-bottom:8px;letter-spacing:.05em}
+.cipher b{color:#8FA0B0;font-weight:400}
+
+.verdict{display:none;font-family:"Instrument Serif",serif;font-size:19px;line-height:1.7;
+  color:var(--amber);border-left:2px solid var(--amber);padding-left:16px;margin-top:20px}
+.verdict.on{display:block}
+a.ghost{display:inline-block;margin-top:22px;font-size:12px;letter-spacing:.14em;color:var(--mist);
+  text-decoration:none;border:1px solid var(--line);padding:11px 18px;border-radius:2px}
+a.ghost:hover{border-color:var(--amber);color:var(--amber)}
+#msg{width:100%;max-width:560px;font-size:13px;line-height:1.8;color:var(--dim);min-height:1.6em}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important}}
+</style>
+<link rel="stylesheet" href="../birthday.css">
+</head>
+<body>
+
+<header>
+  <span class="eyebrow">BIRTHDAY QUEST · 03 / 05</span>
+  <span class="counter" id="score">SIGNAL 1 / 3</span>
+</header>
+
+<main>
+
+  <div id="gate">
+    <p>The shoe rack was hiding another paper clue. Type the letter you found there.</p>
+    <div class="row">
+      <input class="txt" id="entry" maxlength="1" autocomplete="off" spellcheck="false"
+        placeholder="·" aria-label="letter found at the shoe rack">
+    </div>
+  </div>
+
+  <!-- SEG 1 -->
+  <section class="seg" id="s1">
+    <div class="tag">INTERCEPT · 03:39</div>
+    <h2>Something is blinking in the dark.</h2>
+    <p class="lead">A light on the far wall, flashing on and off in a pattern. Long, short, long.
+    It keeps repeating. It is only three letters — and if you know whose signature this is, you will
+    not need to count them twice.</p>
+    <div class="player">
+      <div id="lamp"><div class="lamp-core" id="core1"></div></div>
+      <div class="controls">
+        <button class="go" id="play1">▶ PLAY THE FLASHES</button>
+        <button class="go" id="show1">show the marks</button>
+      </div>
+      <div class="morse-txt" id="mt1" style="display:none"></div>
+    </div>
+    <div class="row">
+      <input class="txt" id="in1" maxlength="6" autocomplete="off" spellcheck="false"
+        placeholder="· · ·" aria-label="three letters">
+      <button class="go" id="ok1">DECODE</button>
+    </div>
+    <div class="verdict" id="v1">Their crown. Of course it is you who'd recognise it first.</div>
+  </section>
+
+  <!-- SEG 2 -->
+  <section class="seg" id="s2">
+    <div class="tag">INTERCEPT · SECOND SIGNAL</div>
+    <h2>The light changes.</h2>
+    <p class="lead">Now it is longer — five letters this time. Same rules. This one is not a name.
+    It is a <i>place</i>. It is telling you where to go.</p>
+    <div class="player">
+      <div id="lamp2" class="lamp2"><div class="lamp-core" id="core2"></div></div>
+      <div class="controls">
+        <button class="go" id="play2">▶ PLAY THE FLASHES</button>
+        <button class="go" id="show2">show the marks</button>
+      </div>
+      <div class="morse-txt" id="mt2" style="display:none"></div>
+    </div>
+    <div class="row">
+      <input class="txt" id="in2" maxlength="8" autocomplete="off" spellcheck="false"
+        placeholder="· · · · ·" aria-label="five letters">
+      <button class="go" id="ok2">DECODE</button>
+    </div>
+    <div class="verdict" id="v2">An album. Go to the shelf where the records live.</div>
+  </section>
+
+  <!-- SEG 3 -->
+  <section class="seg" id="s3">
+    <div class="tag">INTERCEPT · THE NUMBERS</div>
+    <h2>Which one, though?</h2>
+    <p class="lead">There are a lot of records on that shelf. The last part of the signal isn't
+    flashes — it's a line of numbers, the kind you'd hum. But these aren't meant to be sung.
+    Each number is a letter: <i>1 = A, 2 = B, 3 = C …</i> right up the alphabet. Read the line and
+    you'll have the name of the one to pull out.</p>
+    <div class="cipher"><b>1</b>=A &nbsp;<b>2</b>=B &nbsp;<b>3</b>=C &nbsp; … &nbsp;
+      <b>19</b>=S &nbsp;<b>20</b>=T &nbsp;<b>26</b>=Z</div>
+    <div class="staff" id="staff"></div>
+    <div class="row">
+      <input class="txt" id="in3" maxlength="14" autocomplete="off" spellcheck="false"
+        placeholder="one word" aria-label="the word">
+      <button class="go" id="ok3">DECODE</button>
+    </div>
+    <div class="verdict" id="v3"></div>
+  </section>
+
+</main>
+
+<p id="msg">One little letter opens this chapter.</p>
+
+<script>
+const CONFIG = {
+  ENTRY    : "D",
+  UNLOCK1  : "TXT",
+  UNLOCK2  : "ALBUM",
+  SONG     : "STRANGER",          // A1Z26 → 19 20 18 1 14 7 5 18
+  SONG_FULL: "Beautiful Strangers",
+  NEXT_URL : "calendar.html"
+};
+
+const MORSE={A:'.-',B:'-...',C:'-.-.',D:'-..',E:'.',F:'..-.',G:'--.',H:'....',I:'..',J:'.---',
+K:'-.-',L:'.-..',M:'--',N:'-.',O:'---',P:'.--.',Q:'--.-',R:'.-.',S:'...',T:'-',U:'..-',
+V:'...-',W:'.--',X:'-..-',Y:'-.--',Z:'--..'};
+const enc=w=>[...w.toUpperCase()].map(c=>MORSE[c]).join(' / ');
+const norm=v=>(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+const $=s=>document.getElementById(s);
+
+/* entry gate */
+$('entry').addEventListener('input',e=>{
+  e.target.value=e.target.value.replace(/[^a-zA-Z]/g,'').toUpperCase();
+  if(e.target.value===CONFIG.ENTRY){
+    $('gate').style.display='none';
+    $('s1').classList.add('on');
+    $('msg').textContent='Play the flashes. You can replay as many times as you like.';
+  }
+});
+
+/* ── morse flasher ── */
+const U=110;  // dit unit ms
+function play(word,core,btn){
+  btn.disabled=true;
+  const seq=[];
+  [...word.toUpperCase()].forEach((ch,ci)=>{
+    if(ci) seq.push(['off',U*3]);              // letter gap
+    const code=MORSE[ch];
+    [...code].forEach((sym,si)=>{
+      if(si) seq.push(['off',U]);              // intra-letter gap
+      seq.push(['on',sym==='-'?U*3:U]);
+    });
+  });
+  let t=0;
+  seq.forEach(([st,dur])=>{
+    setTimeout(()=>core.classList.toggle('hi',st==='on'),t);
+    t+=dur;
+  });
+  setTimeout(()=>{core.classList.remove('hi');btn.disabled=false;},t+40);
+}
+
+/* ── seg 1 ── */
+$('mt1').innerHTML=enc(CONFIG.UNLOCK1).replace(/\//g,'<span class="slash">/</span>');
+$('play1').onclick=()=>play(CONFIG.UNLOCK1,$('core1'),$('play1'));
+$('show1').onclick=()=>{$('mt1').style.display='block';$('show1').disabled=true;};
+function try1(){
+  if(norm($('in1').value)===CONFIG.UNLOCK1){
+    $('v1').classList.add('on'); $('score').textContent='SIGNAL 2 / 3';
+    $('msg').textContent='Good. It blinks again.';
+    setTimeout(()=>{s1.classList.remove('on');$('s2').classList.add('on');
+      $('s2').scrollIntoView({behavior:'smooth',block:'start'});},1100);
+  } else bad($('in1'));
+}
+$('ok1').onclick=try1; $('in1').addEventListener('keydown',e=>{if(e.key==='Enter')try1()});
+
+/* ── seg 2 ── */
+$('mt2').innerHTML=enc(CONFIG.UNLOCK2).replace(/\//g,'<span class="slash">/</span>');
+$('play2').onclick=()=>play(CONFIG.UNLOCK2,$('core2'),$('play2'));
+$('show2').onclick=()=>{$('mt2').style.display='block';$('show2').disabled=true;};
+function try2(){
+  if(norm($('in2').value)===CONFIG.UNLOCK2){
+    $('v2').classList.add('on'); $('score').textContent='SIGNAL 3 / 3';
+    $('msg').textContent='Now the numbers.';
+    setTimeout(()=>{$('s2').classList.remove('on');$('s3').classList.add('on');buildStaff();
+      $('s3').scrollIntoView({behavior:'smooth',block:'start'});},1100);
+  } else bad($('in2'));
+}
+$('ok2').onclick=try2; $('in2').addEventListener('keydown',e=>{if(e.key==='Enter')try2()});
+
+/* ── seg 3 · jianpu-styled digit cipher ── */
+function buildStaff(){
+  const nums=[...CONFIG.SONG.toUpperCase()].map(c=>c.charCodeAt(0)-64); // A1Z26
+  const st=$('staff');
+  nums.forEach(n=>{
+    const d=document.createElement('div'); d.className='note';
+    d.innerHTML=`<span class="d">${n}</span><span class="l"></span>`;
+    d.onclick=()=>{ const l=d.querySelector('.l');
+      l.textContent = l.textContent ? '' : String.fromCharCode(64+n); };
+    st.appendChild(d);
+  });
+}
+function try3(){
+  const v=norm($('in3').value);
+  if(v===CONFIG.SONG || v===norm(CONFIG.SONG_FULL) || norm(CONFIG.SONG_FULL).includes(v)&&v.length>=6){
+    $('v3').innerHTML=`<i>${CONFIG.SONG_FULL}.</i><br>Pull it off the shelf and open the sleeve.`;
+    $('v3').classList.add('on'); $('score').textContent='DECODED';
+    $('msg').textContent='';
+    document.querySelectorAll('#staff .note .l').forEach((l,i)=>
+      setTimeout(()=>l.textContent=String.fromCharCode(64+(CONFIG.SONG.charCodeAt(i)-64)),i*90));
+    if(CONFIG.NEXT_URL){
+      const a=document.createElement('a');
+      a.href=CONFIG.NEXT_URL;a.className='ghost';a.textContent='FOUND IT →';
+      $('v3').appendChild(a);
+    }
+  } else bad($('in3'));
+}
+$('ok3').onclick=try3; $('in3').addEventListener('keydown',e=>{if(e.key==='Enter')try3()});
+
+function bad(el){el.classList.add('bad');setTimeout(()=>el.classList.remove('bad'),400);}
+
+/* ── dev skip · press S, or tap STATION three times. Delete before sending. ── */
+const s1=$('s1');
+function skip(){
+  if($('gate').style.display!=='none'){$('gate').style.display='none';$('s1').classList.add('on');return;}
+  if(s1.classList.contains('on')){$('in1').value=CONFIG.UNLOCK1;try1();}
+  else if($('s2').classList.contains('on')){$('in2').value=CONFIG.UNLOCK2;try2();}
+  else {$('in3').value=CONFIG.SONG;try3();}
+}
+addEventListener('keydown',e=>{
+  if(document.activeElement.tagName==='INPUT') return;
+  if(e.key==='s'||e.key==='S') skip();
+});
+let taps=0,tt;
+document.querySelector('.eyebrow').addEventListener('click',()=>{
+  clearTimeout(tt); if(++taps>=3){taps=0;skip();} tt=setTimeout(()=>taps=0,600);
+});
+</script>
+</body>
+</html>

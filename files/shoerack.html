@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Birthday Quest · Shoe Rack</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0B1622;--amber:#E4B57D;--mist:#D7DEE6;--dim:#5C6B7C;--line:#22323F;--cell:#12212F}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100%;background:var(--ink);color:var(--mist);font-family:"IBM Plex Mono",monospace;
+  display:flex;flex-direction:column;align-items:center;padding:30px 14px 60px;gap:18px;
+  -webkit-tap-highlight-color:transparent}
+header{width:100%;max-width:620px;display:flex;align-items:baseline;justify-content:space-between}
+.eyebrow{font-size:11px;letter-spacing:.22em;color:var(--amber)}
+.counter{font-size:11px;letter-spacing:.1em;color:var(--dim)}
+main{width:100%;max-width:620px;display:flex;flex-direction:column;gap:22px}
+
+/* ── gate ── */
+#gate{display:flex;flex-direction:column;gap:14px}
+#gate p{font-size:14px;line-height:1.8;color:#8FA0B0}
+.coordrow{display:flex;gap:10px;align-items:center}
+.coordrow input{width:86px;background:var(--cell);border:1px solid var(--line);color:var(--mist);
+  font:inherit;font-size:20px;letter-spacing:.3em;text-align:center;padding:12px 8px;border-radius:2px}
+.coordrow input:focus{outline:none;border-color:var(--amber)}
+
+/* ── grid ── */
+#wrap{position:relative;width:100%;display:none}
+#wrap.on{display:block}
+#grid{display:grid;grid-template-columns:repeat(11,1fr);gap:1px;background:var(--line);
+  border:1px solid var(--line);touch-action:manipulation}
+.sq{position:relative;aspect-ratio:1;background:var(--cell)}
+.sq.blk{background:#060D14}
+.sq .n{position:absolute;top:1px;left:3px;font-size:8px;color:var(--dim);pointer-events:none;z-index:2}
+.sq input{width:100%;height:100%;background:none;border:0;text-align:center;color:var(--mist);
+  font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:clamp(13px,3.1vw,19px);
+  text-transform:uppercase;caret-color:transparent;padding:0}
+.sq input:focus{outline:none}
+.sq.cur{background:#1D3348}
+.sq.beam{background:#17293A}
+.sq.ring:after{content:"";position:absolute;inset:9%;border:1px solid #E4B57D55;border-radius:50%;
+  pointer-events:none}
+.sq.hit input{color:var(--amber)}
+#ring{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0;
+  transition:opacity 1s ease}
+#ring.on{opacity:1}
+#ring circle{fill:none;stroke:var(--amber);stroke-width:2;
+  stroke-dasharray:1000;stroke-dashoffset:1000;}
+#ring.on circle{animation:draw 1.6s ease forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+
+/* ── clues ── */
+#clues{display:none;grid-template-columns:1fr 1fr;gap:26px}
+#clues.on{display:grid}
+h2{font-size:10px;letter-spacing:.24em;color:var(--amber);font-weight:400;
+  border-bottom:1px solid var(--line);padding-bottom:7px;margin-bottom:9px}
+ol{list-style:none;display:flex;flex-direction:column;gap:7px}
+li{font-size:12.5px;line-height:1.5;color:#8FA0B0;cursor:pointer;display:flex;gap:7px}
+li b{color:var(--dim);font-weight:400;min-width:16px;text-align:right}
+li.on{color:var(--mist)}
+li.done{opacity:.35}
+@media(max-width:560px){#clues{grid-template-columns:1fr;gap:18px}}
+
+/* ── end ── */
+#out{display:none;padding-top:6px}
+#out.on{display:block}
+#out .line{font-family:"Instrument Serif",serif;font-size:clamp(34px,9vw,58px);line-height:1.05;
+  color:var(--amber);letter-spacing:.02em}
+#out .tail{font-size:14px;line-height:1.8;color:#8FA0B0;margin-top:14px}
+a.ghost{display:inline-block;margin-top:18px;font-size:12px;letter-spacing:.14em;color:var(--mist);
+  text-decoration:none;border:1px solid var(--line);padding:10px 18px;border-radius:2px}
+a.ghost:hover{border-color:var(--amber);color:var(--amber)}
+#msg{width:100%;max-width:620px;font-size:13px;line-height:1.8;color:#8FA0B0;min-height:1.8em}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+<link rel="stylesheet" href="../birthday.css">
+</head>
+<body>
+
+<header>
+  <span class="eyebrow">BIRTHDAY QUEST · 02 / 05</span>
+  <span class="counter" id="score">0 / 21</span>
+</header>
+
+<main>
+  <div id="gate">
+    <p>You found a new paper clue at the puzzle's location. Type the single letter written on it.</p>
+    <div class="coordrow">
+      <input id="key" maxlength="1" placeholder="·" autocomplete="off" spellcheck="false" aria-label="letter on the paper clue">
+    </div>
+  </div>
+
+  <div id="wrap">
+    <div id="grid"></div>
+    <svg id="ring" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <circle cx="50" cy="50" r="33"></circle>
+    </svg>
+  </div>
+
+  <div id="clues">
+    <div><h2>ACROSS</h2><ol id="ac"></ol></div>
+    <div><h2>DOWN</h2><ol id="dn"></ol></div>
+  </div>
+
+  <div id="out"><div class="line" id="outline"></div><div class="tail" id="outtail"></div></div>
+</main>
+
+<p id="msg"></p>
+
+<script>
+const CONFIG = { ENTRY:"W", NEXT_URL:"album.html" };
+
+const GRID = [
+ "SPA#ARCHIVE","#R#L#####I#","MOVIES#THAT","#D#K###H###","MUSEUM#EACH",
+ "#C###A###O#","ITEM#PARENT","###A###E#T#","THEY#RENTAL","#A#####T#C#","USUALLY#ITS"
+].map(r=>r.split(""));
+const SZ=11;
+const RING=[[2,5],[3,7],[5,9],[7,7],[8,5],[7,3],[5,1],[3,3]];   // clockwise from the top
+
+const CLUES = {
+  "0,0,A":"Where the water does the work",
+  "0,4,A":"Nothing here is ever thrown away",
+  "2,0,A":"Two hours in the dark",
+  "2,7,A":"The one further off",
+  "4,0,A":"A building full of other people's things",
+  "4,7,A":"Apiece",
+  "6,0,A":"One line on a list",
+  "6,5,A":"The company that owns the company",
+  "8,0,A":"The others",
+  "8,5,A":"Yours until Sunday",
+  "10,0,A":"More often than not",
+  "10,8,A":"Belonging to the thing",
+  "0,1,D":"What comes out — or what multiplying gives you",
+  "8,1,D":"Owns, in the third person",
+  "1,3,D":"Similar to; also a small blue thumb",
+  "6,3,D":"Month, or permission",
+  "4,5,D":"Flat, folded, and honest",
+  "2,7,D":"The commonest word here",
+  "6,7,D":"A tear, or what you pay",
+  "0,9,D":"By way of",
+  "4,9,D":"Touch — or a name in your phone"
+};
+
+const $=s=>document.getElementById(s);
+const key=(r,c,d)=>r+","+c+","+d;
+const isW=(r,c)=>r>=0&&r<SZ&&c>=0&&c<SZ&&GRID[r][c]!=="#";
+const inRing=(r,c)=>RING.some(p=>p[0]===r&&p[1]===c);
+
+/* ── entries + numbering ── */
+const entries=[]; const num={};
+let n=0;
+for(let r=0;r<SZ;r++)for(let c=0;c<SZ;c++){
+  if(!isW(r,c)) continue;
+  const aStart=!isW(r,c-1)&&isW(r,c+1)&&isW(r,c+2);
+  const dStart=!isW(r-1,c)&&isW(r+1,c)&&isW(r+2,c);
+  if(aStart||dStart) num[r+","+c]=++n;
+  if(aStart){let L=0;while(isW(r,c+L))L++;entries.push({r,c,d:"A",L,no:n});}
+  if(dStart){let L=0;while(isW(r+L,c))L++;entries.push({r,c,d:"D",L,no:n});}
+}
+
+/* ── build ── */
+const cells={};
+function build(){
+  const g=$("grid");
+  for(let r=0;r<SZ;r++)for(let c=0;c<SZ;c++){
+    const d=document.createElement("div");
+    d.className="sq"+(isW(r,c)?"":" blk")+(inRing(r,c)?" ring":"");
+    if(isW(r,c)){
+      if(num[r+","+c]) d.innerHTML='<span class="n">'+num[r+","+c]+'</span>';
+      const i=document.createElement("input");
+      i.maxLength=1; i.autocomplete="off"; i.spellcheck=false;
+      i.setAttribute("aria-label","row "+(r+1)+" column "+(c+1));
+      i.addEventListener("focus",()=>{cur=[r,c];highlight()});
+      i.addEventListener("click",()=>{ if(cur[0]===r&&cur[1]===c) dir=dir==="A"?"D":"A"; highlight(); });
+      i.addEventListener("input",()=>{
+        i.value=i.value.replace(/[^a-zA-Z]/g,"").toUpperCase();
+        if(i.value) step(1);
+        check();
+      });
+      i.addEventListener("keydown",e=>{
+        const k=e.key;
+        if(k==="Backspace"&&!i.value){e.preventDefault();step(-1);}
+        else if(k==="ArrowRight"){e.preventDefault();dir="A";move(0,1)}
+        else if(k==="ArrowLeft"){e.preventDefault();dir="A";move(0,-1)}
+        else if(k==="ArrowDown"){e.preventDefault();dir="D";move(1,0)}
+        else if(k==="ArrowUp"){e.preventDefault();dir="D";move(-1,0)}
+        else if(k==="Tab"){e.preventDefault();dir=dir==="A"?"D":"A";highlight()}
+      });
+      d.appendChild(i); cells[r+","+c]=i;
+    }
+    g.appendChild(d);
+  }
+  ["A","D"].forEach(dd=>{
+    const ol=$(dd==="A"?"ac":"dn");
+    entries.filter(e=>e.d===dd).forEach(e=>{
+      const li=document.createElement("li");
+      li.id="cl"+key(e.r,e.c,e.d);
+      li.innerHTML="<b>"+e.no+"</b><span>"+CLUES[key(e.r,e.c,e.d)]+" ("+e.L+")</span>";
+      li.onclick=()=>{dir=e.d;cells[e.r+","+e.c].focus()};
+      ol.appendChild(li);
+    });
+  });
+}
+
+let cur=[0,0], dir="A";
+function move(dr,dc){
+  let [r,c]=cur;
+  for(let i=0;i<SZ;i++){ r+=dr;c+=dc; if(!isW(r,c)) break; if(cells[r+","+c]){cells[r+","+c].focus();return;} }
+  highlight();
+}
+function step(k){
+  const [dr,dc]=dir==="A"?[0,k]:[k,0];
+  const r=cur[0]+dr,c=cur[1]+dc;
+  if(isW(r,c)) cells[r+","+c].focus();
+}
+function entryAt(r,c,d){
+  return entries.find(e=>{
+    if(e.d!==d) return false;
+    return d==="A" ? (e.r===r && c>=e.c && c<e.c+e.L) : (e.c===c && r>=e.r && r<e.r+e.L);
+  });
+}
+function highlight(){
+  document.querySelectorAll(".sq").forEach(s=>s.classList.remove("cur","beam"));
+  document.querySelectorAll("li").forEach(l=>l.classList.remove("on"));
+  const [r,c]=cur;
+  let e=entryAt(r,c,dir) || entryAt(r,c,dir==="A"?"D":"A");
+  if(!e) return;
+  dir=e.d;
+  const sq=[...$("grid").children];
+  for(let i=0;i<e.L;i++){
+    const rr=e.d==="A"?e.r:e.r+i, cc=e.d==="A"?e.c+i:e.c;
+    sq[rr*SZ+cc].classList.add("beam");
+  }
+  sq[r*SZ+c].classList.add("cur");
+  const li=$("cl"+key(e.r,e.c,e.d)); if(li) li.classList.add("on");
+}
+
+/* ── checking ── */
+let solved=false;
+function check(){
+  let done=0;
+  entries.forEach(e=>{
+    let ok=true;
+    for(let i=0;i<e.L;i++){
+      const rr=e.d==="A"?e.r:e.r+i, cc=e.d==="A"?e.c+i:e.c;
+      if((cells[rr+","+cc].value||"")!==GRID[rr][cc]) ok=false;
+    }
+    const li=$("cl"+key(e.r,e.c,e.d)); if(li) li.classList.toggle("done",ok);
+    if(ok) done++;
+  });
+  $("score").textContent=done+" / "+entries.length;
+  if(done===entries.length && !solved) finish();
+}
+
+function finish(){
+  solved=true;
+  document.querySelectorAll(".sq input").forEach(i=>i.blur());
+  RING.forEach((p,k)=>{
+    const sq=[...$("grid").children][p[0]*SZ+p[1]];
+    setTimeout(()=>sq.classList.add("hit"), 400+k*170);
+  });
+  setTimeout(()=>$("ring").classList.add("on"), 400);
+  setTimeout(()=>{
+    $("out").classList.add("on");
+    $("outline").textContent=RING.map(p=>GRID[p[0]][p[1]]).join("");
+    $("outtail").innerHTML="Clockwise, from the top.<br>Now find something shaped like the ring — and the same colour as the squares around it.";
+    if(CONFIG.NEXT_URL){
+      const a=document.createElement("a");
+      a.href=CONFIG.NEXT_URL;a.className="ghost";a.textContent="FOUND IT →";
+      $("outtail").appendChild(a);
+    }
+    $("out").scrollIntoView({behavior:"smooth",block:"center"});
+  },2200);
+}
+
+/* ── gate ── */
+function open(){
+  if($("wrap").classList.contains("on")) return;
+  $("gate").style.display="none";
+  $("wrap").classList.add("on"); $("clues").classList.add("on");
+  $("msg").textContent="Eight squares are circled. They are not there for decoration.";
+  build(); highlight();
+}
+$("key").addEventListener("input",e=>{
+  e.target.value=e.target.value.replace(/[^a-zA-Z]/g,"").toUpperCase();
+  if(e.target.value===CONFIG.ENTRY) open();
+});
+
+/* ── dev skip · press S, or tap STATION three times. Delete before sending. ── */
+function skip(){
+  if(!$("wrap").classList.contains("on")){ open(); return; }
+  const e=entries.find(e=>{
+    for(let i=0;i<e.L;i++){
+      const rr=e.d==="A"?e.r:e.r+i, cc=e.d==="A"?e.c+i:e.c;
+      if((cells[rr+","+cc].value||"")!==GRID[rr][cc]) return true;
+    } return false;
+  });
+  if(!e) return;
+  for(let i=0;i<e.L;i++){
+    const rr=e.d==="A"?e.r:e.r+i, cc=e.d==="A"?e.c+i:e.c;
+    cells[rr+","+cc].value=GRID[rr][cc];
+  }
+  check();
+}
+addEventListener("keydown",e=>{
+  if(document.activeElement.tagName==="INPUT") return;
+  if(e.key==="s"||e.key==="S") skip();
+});
+let taps=0,tt;
+document.querySelector(".eyebrow").addEventListener("click",()=>{
+  clearTimeout(tt); if(++taps>=3){taps=0;skip();} tt=setTimeout(()=>taps=0,600);
+});
+</script>
+</body>
+</html>

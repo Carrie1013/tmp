@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Birthday Quest · Calendar</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0B1622;--amber:#E4B57D;--mist:#D7DEE6;--dim:#5C6B7C;--line:#22323F;--cell:#12212F}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100%;background:var(--ink);color:var(--mist);font-family:"IBM Plex Mono",monospace;
+  display:flex;flex-direction:column;align-items:center;padding:30px 16px 90px;gap:20px;
+  -webkit-tap-highlight-color:transparent}
+header{width:100%;max-width:620px;display:flex;align-items:baseline;justify-content:space-between}
+.eyebrow{font-size:11px;letter-spacing:.22em;color:var(--amber)}
+.counter{font-size:11px;letter-spacing:.1em;color:var(--dim)}
+main{width:100%;max-width:620px}
+
+#gate{display:flex;flex-direction:column;gap:14px}
+#gate p{font-size:14px;line-height:1.8;color:#8FA0B0}
+input.txt{background:var(--cell);border:1px solid var(--line);color:var(--mist);font:inherit;
+  font-size:15px;letter-spacing:.3em;text-transform:uppercase;padding:12px 14px;border-radius:2px;
+  width:100%;max-width:300px}
+input.txt:focus{outline:none;border-color:var(--amber)}
+input.bad{border-color:#B8543F;animation:nudge .3s}
+@keyframes nudge{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+.intro{font-family:"Instrument Serif",serif;font-size:clamp(22px,5.4vw,32px);line-height:1.25;
+  margin:6px 0 6px}
+.sub{font-size:13px;line-height:1.8;color:#8FA0B0;margin-bottom:8px}
+
+/* film strip */
+#strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0 8px}
+@media(max-width:560px){#strip{grid-template-columns:repeat(2,1fr)}}
+.frame{position:relative;border:1px solid var(--line);border-radius:3px;overflow:hidden;
+  background:#0d1a26;aspect-ratio:3/4;cursor:default}
+.frame img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.92) contrast(1.02)}
+.frame .ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  color:#33465A;font-size:10px;letter-spacing:.1em;text-align:center;padding:8px}
+.frame .date{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(transparent,#060D14ee);
+  color:var(--amber);font-size:12px;letter-spacing:.08em;padding:14px 8px 6px;text-align:center;
+  opacity:0;transition:opacity .4s}
+.frame.reveal .date{opacity:1}
+.frame .idx{position:absolute;top:5px;left:6px;font-size:9px;color:var(--dim)}
+
+/* worksheet */
+.work{border-top:1px solid var(--line);margin-top:18px;padding-top:22px;display:none}
+.work.on{display:block;animation:rise .6s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.tag{font-size:10px;letter-spacing:.26em;color:var(--amber);margin-bottom:12px}
+.eq{font-family:"IBM Plex Mono",monospace;font-size:14px;line-height:2.4;color:#8FA0B0}
+.eq b{color:var(--mist);font-weight:600}
+.eq .amber{color:var(--amber)}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:6px 0 18px}
+.chip{border:1px solid var(--line);border-radius:2px;padding:6px 10px;font-size:12px;color:var(--mist);
+  background:var(--cell)}
+.chip small{color:var(--dim);font-size:9px;display:block;letter-spacing:.05em}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.row label{font-size:12px;color:var(--dim);letter-spacing:.08em;min-width:58px}
+input.num{width:80px;background:var(--cell);border:1px solid var(--line);color:var(--mist);font:inherit;
+  font-size:17px;text-align:center;letter-spacing:.15em;padding:10px;border-radius:2px}
+input.num:focus{outline:none;border-color:var(--amber)}
+button.go{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.14em;color:var(--mist);
+  background:none;border:1px solid var(--line);padding:11px 18px;border-radius:2px;cursor:pointer}
+button.go:hover{border-color:var(--amber);color:var(--amber)}
+.hint{font-size:11px;color:var(--dim);margin-top:10px;line-height:1.7}
+
+/* result */
+#done{display:none;padding-top:26px;text-align:center}
+#done.on{display:block;animation:rise .7s ease both}
+.cal{display:inline-block;border:1px solid var(--line);border-radius:6px;overflow:hidden;
+  width:200px;margin:0 auto}
+.cal .m{background:#8a2f2f;color:#fff;font-size:12px;letter-spacing:.2em;padding:9px;text-align:center;
+  font-family:"IBM Plex Mono",monospace}
+.cal .d{font-family:"Instrument Serif",serif;font-size:76px;color:var(--mist);padding:16px 0 10px;
+  line-height:1;background:#0d1a26}
+.cal .w{font-size:10px;letter-spacing:.24em;color:var(--dim);padding:0 0 14px;background:#0d1a26}
+#done .tail{font-size:14px;line-height:1.8;color:#8FA0B0;margin-top:18px}
+a.ghost{display:inline-block;margin-top:20px;font-size:12px;letter-spacing:.14em;color:var(--mist);
+  text-decoration:none;border:1px solid var(--line);padding:11px 18px;border-radius:2px}
+a.ghost:hover{border-color:var(--amber);color:var(--amber)}
+#msg{width:100%;max-width:620px;font-size:13px;line-height:1.8;color:var(--dim);min-height:1.6em}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important}}
+</style>
+<link rel="stylesheet" href="../birthday.css">
+</head>
+<body>
+
+<header>
+  <span class="eyebrow">BIRTHDAY QUEST · 04 / 05</span>
+  <span class="counter" id="score">8 FRAMES</span>
+</header>
+
+<main>
+  <div id="gate">
+    <p>The album sleeve had one tiny greeting tucked in it. Type it in.</p>
+    <input class="txt" id="key" maxlength="14" autocomplete="off" spellcheck="false"
+      placeholder="· · · · · · · ·" aria-label="the word from station four">
+  </div>
+
+  <div id="body" style="display:none">
+    <div class="intro">Eight frames from one year.</div>
+    <p class="sub">Tap each one to develop it — the date it was taken will surface in the corner.
+    You'll need those numbers.</p>
+
+    <div id="strip"></div>
+
+    <div class="work" id="work">
+      <div class="tag">THE ARITHMETIC</div>
+      <div class="eq">
+        Add up every <b>day</b> in the corners: <span id="daysList" class="amber"></span><br>
+        &nbsp;&nbsp;→ that's <b id="daySum">?</b>. Too big for a calendar. Keep subtracting
+        <b>31</b> until it fits.<br><br>
+        Add up every <b>month</b>: <span id="monsList" class="amber"></span><br>
+        &nbsp;&nbsp;→ that's <b id="monSum">?</b>. Keep subtracting <b>12</b> until it fits.
+      </div>
+      <div class="row">
+        <label>MONTH</label>
+        <input class="num" id="inM" inputmode="numeric" maxlength="2" placeholder="··">
+        <label style="min-width:14px">/</label>
+        <label>DAY</label>
+        <input class="num" id="inD" inputmode="numeric" maxlength="2" placeholder="··">
+        <button class="go" id="solve">CHECK</button>
+      </div>
+      <div class="hint" id="hint"></div>
+    </div>
+
+    <div id="done">
+      <div class="cal">
+        <div class="m" id="calM">SEPTEMBER</div>
+        <div class="d" id="calD">7</div>
+        <div class="w">GO OPEN THAT PAGE</div>
+      </div>
+      <div class="tail" id="tail"></div>
+    </div>
+  </div>
+</main>
+
+<p id="msg"></p>
+
+<script>
+const CONFIG = {
+  ENTRY : "HI",     // the greeting found in the album
+  NEXT_URL : "mailbox.html",
+  /* ▼ put your 8 photo URLs here (upload to any image host).
+     Leave "" to show a labelled placeholder that still reveals the date. */
+  PHOTOS : [
+    { url:"../photos/1_2025-08-29_kitchen.jpg", date:[2025, 8,29], cap:"kitchen · peace sign" },
+    { url:"../photos/2_2025-10-05_mcdonalds.jpg", date:[2025,10, 5], cap:"mcdonald's" },
+    { url:"../photos/3_2025-10-06_summit.jpg", date:[2025,10, 6], cap:"autumn summit" },
+    { url:"../photos/4_2025-11-01_halloween.jpg", date:[2025,11, 1], cap:"halloween" },
+    { url:"../photos/5_2025-11-24_chalkwall.jpg", date:[2025,11,24], cap:"chalk wall" },
+    { url:"../photos/6_2025-12-28_snowangel.jpg", date:[2025,12,28], cap:"snow angel" },
+    { url:"../photos/7_2026-02-13_frozenshore.jpg", date:[2026, 2,13], cap:"frozen shore" },
+    { url:"../photos/8_2026-05-25_redrocks.jpg", date:[2026, 5,25], cap:"red rocks" }
+  ]
+};
+
+const MON=["","JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+const MONTHNAME=["","JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE","JULY","AUGUST",
+  "SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"];
+const $=s=>document.getElementById(s);
+const norm=v=>(v||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+
+// compute the answer straight from the data (no magic numbers)
+const days = CONFIG.PHOTOS.map(p=>p.date[2]);
+const mons = CONFIG.PHOTOS.map(p=>p.date[1]);
+const daySum = days.reduce((a,b)=>a+b,0);
+const monSum = mons.reduce((a,b)=>a+b,0);
+let ansD = daySum; while(ansD>31) ansD-=31;
+let ansM = monSum; while(ansM>12) ansM-=12;
+
+let revealed=0;
+function buildStrip(){
+  const strip=$("strip");
+  CONFIG.PHOTOS.forEach((p,i)=>{
+    const f=document.createElement("div"); f.className="frame";
+    const dstr=MON[p.date[1]]+" "+String(p.date[2]).padStart(2,"0");
+    f.innerHTML=`<span class="idx">${String(i+1).padStart(2,"0")}</span>`+
+      (p.url ? `<img src="${p.url}" alt="">`
+             : `<div class="ph">${p.cap}<br>(photo ${i+1})</div>`)+
+      `<div class="date">${dstr}</div>`;
+    f.onclick=()=>{
+      if(f.classList.contains("reveal")) return;
+      f.classList.add("reveal"); revealed++;
+      $("score").textContent=revealed+" / 8 DEVELOPED";
+      if(revealed===CONFIG.PHOTOS.length) openWork();
+    };
+    strip.appendChild(f);
+  });
+}
+
+function openWork(){
+  $("daysList").textContent = days.join(" + ") + " = " + daySum;
+  $("monsList").textContent = mons.join(" + ") + " = " + monSum;
+  $("daySum").textContent = daySum;
+  $("monSum").textContent = monSum;
+  $("work").classList.add("on");
+  $("msg").textContent="Two little sums. Both answers hide in the corners.";
+  $("work").scrollIntoView({behavior:"smooth",block:"center"});
+}
+
+$("solve").onclick=()=>{
+  const m=parseInt($("inM").value,10), d=parseInt($("inD").value,10);
+  if(m===ansM && d===ansD){
+    $("work").classList.remove("on");
+    $("calM").textContent=MONTHNAME[ansM];
+    $("calD").textContent=ansD;
+    $("done").classList.add("on");
+    $("score").textContent="DATE FOUND";
+    $("msg").textContent="";
+    $("tail").innerHTML="Go to the calendar. Turn to that page.<br>Something is waiting between the leaves.";
+    if(CONFIG.NEXT_URL){
+      const a=document.createElement("a");
+      a.href=CONFIG.NEXT_URL;a.className="ghost";a.textContent="FOUND IT →";
+      $("tail").appendChild(a);
+    }
+    $("done").scrollIntoView({behavior:"smooth",block:"center"});
+  } else {
+    let h="";
+    if(m!==ansM) h="Month's not right yet — "+monSum+" minus 12, and again if it's still over 12. ";
+    if(d!==ansD) h+="Day's not right yet — "+daySum+", take away 31 until it lands on the calendar.";
+    $("hint").textContent=h;
+    [$("inM"),$("inD")].forEach(el=>{el.classList.add("bad");setTimeout(()=>el.classList.remove("bad"),400)});
+  }
+};
+[$("inM"),$("inD")].forEach(el=>el.addEventListener("keydown",e=>{if(e.key==="Enter")$("solve").click()}));
+
+/* gate */
+$("key").addEventListener("input",e=>{
+  if(norm(e.target.value)===CONFIG.ENTRY){
+    $("gate").style.display="none";
+    $("body").style.display="block";
+    $("msg").textContent="Tap all eight to develop them.";
+    buildStrip();
+  }
+});
+
+/* dev skip · press S, or tap STATION three times. Delete before sending. */
+function skip(){
+  if($("body").style.display==="none"){
+    $("gate").style.display="none";$("body").style.display="block";buildStrip();return;
+  }
+  if(!$("work").classList.contains("on")){
+    document.querySelectorAll(".frame:not(.reveal)").forEach(f=>f.click());return;
+  }
+  $("inM").value=ansM; $("inD").value=ansD; $("solve").click();
+}
+addEventListener("keydown",e=>{
+  if(document.activeElement.tagName==="INPUT") return;
+  if(e.key==="s"||e.key==="S") skip();
+});
+let taps=0,tt;
+document.querySelector(".eyebrow").addEventListener("click",()=>{
+  clearTimeout(tt); if(++taps>=3){taps=0;skip();} tt=setTimeout(()=>taps=0,600);
+});
+</script>
+</body>
+</html>

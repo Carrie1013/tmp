@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Birthday Quest · Mailbox</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Instrument+Serif:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0B1622;--amber:#E4B57D;--mist:#D7DEE6;--dim:#5C6B7C;--line:#22323F;--cell:#12212F;
+      --paper:#C8CFD6}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100%;background:var(--ink);color:var(--mist);font-family:"IBM Plex Mono",monospace;
+  display:flex;flex-direction:column;align-items:center;padding:30px 16px 80px;gap:20px;
+  -webkit-tap-highlight-color:transparent}
+header{width:100%;max-width:600px;display:flex;align-items:baseline;justify-content:space-between}
+.eyebrow{font-size:11px;letter-spacing:.22em;color:var(--amber)}
+.counter{font-size:11px;letter-spacing:.1em;color:var(--dim)}
+main{width:100%;max-width:600px}
+
+/* ── gate ── */
+#gate{display:flex;flex-direction:column;gap:16px}
+#gate p{font-family:"Newsreader",serif;font-size:17px;line-height:1.75;color:var(--paper)}
+input.txt{background:var(--cell);border:1px solid var(--line);color:var(--mist);font:inherit;
+  font-size:15px;letter-spacing:.28em;text-transform:uppercase;padding:12px 14px;border-radius:2px;
+  width:100%;max-width:300px}
+input.txt:focus{outline:none;border-color:var(--amber)}
+input.bad{border-color:#B8543F;animation:nudge .3s}
+@keyframes nudge{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+/* ── chapters ── */
+.ch{border-top:1px solid var(--line);padding:30px 0;display:none}
+.ch.on{display:block;animation:rise .7s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.tag{font-size:10px;letter-spacing:.26em;color:var(--amber);margin-bottom:12px}
+.ch h2{font-family:"Instrument Serif",serif;font-weight:400;font-size:clamp(28px,7vw,42px);
+  line-height:1.05;margin-bottom:18px;letter-spacing:.01em}
+.prose{font-family:"Newsreader",serif;font-size:17px;line-height:1.8;color:var(--paper)}
+.prose p{margin-bottom:15px}
+.prose i{color:var(--mist)}
+.evi{border-left:2px solid var(--line);padding:12px 0 12px 16px;margin:20px 0;
+  font-family:"IBM Plex Mono",monospace;font-size:13px;line-height:1.9;color:#8FA0B0;letter-spacing:.03em}
+.evi b{color:var(--amber);font-weight:600}
+.q{font-family:"Newsreader",serif;font-style:italic;font-size:18px;color:var(--mist);margin:22px 0 14px}
+.opts{display:flex;flex-wrap:wrap;gap:10px}
+button.opt,button.go{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.12em;
+  color:var(--mist);background:none;border:1px solid var(--line);padding:11px 18px;border-radius:2px;
+  cursor:pointer}
+button.opt:hover,button.go:hover{border-color:var(--amber);color:var(--amber)}
+button.opt.no{opacity:.25;border-color:var(--line);cursor:default}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.solved .q,.solved .opts,.solved .row,.solved table,.solved svg.gears{display:none}
+.verdict{display:none;font-family:"Newsreader",serif;font-size:17px;line-height:1.8;color:var(--amber);
+  border-left:2px solid var(--amber);padding-left:16px;margin-top:8px}
+.solved .verdict{display:block}
+
+table{border-collapse:collapse;font-family:"IBM Plex Mono",monospace;font-size:11.5px;margin:6px 0 4px}
+td,th{border:1px solid var(--line);padding:5px 9px;color:#8FA0B0;text-align:left;font-weight:400}
+th{color:var(--amber);letter-spacing:.1em;font-size:10px}
+
+svg.gears{width:100%;max-width:420px;height:auto;margin:6px 0 4px;display:block}
+svg.gears .g{fill:none;stroke:#3E5062;stroke-width:2}
+svg.gears .belt{stroke:var(--amber);stroke-width:1.5;fill:none;stroke-dasharray:5 4}
+svg.gears text{fill:var(--dim);font-family:"IBM Plex Mono",monospace;font-size:11px}
+svg.gears .drive{stroke:var(--amber)}
+
+/* mastermind */
+#hist{font-family:"IBM Plex Mono",monospace;font-size:13px;line-height:2;color:#8FA0B0;margin:14px 0}
+#hist span{color:var(--amber);letter-spacing:.3em}
+#hist em{font-style:normal;color:var(--dim);font-size:11px;letter-spacing:.1em}
+input.dial{width:130px;letter-spacing:.5em;text-align:center;font-size:19px}
+
+#msg{width:100%;max-width:600px;font-size:13px;line-height:1.8;color:var(--dim);min-height:1.6em}
+a.ghost{display:inline-block;margin-top:20px;font-size:12px;letter-spacing:.14em;color:var(--mist);
+  text-decoration:none;border:1px solid var(--line);padding:11px 18px;border-radius:2px}
+a.ghost:hover{border-color:var(--amber);color:var(--amber)}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important}}
+</style>
+<link rel="stylesheet" href="../birthday.css">
+</head>
+<body>
+
+<header>
+  <span class="eyebrow">BIRTHDAY QUEST · 05 / 05</span>
+  <span class="counter" id="score">CASE OPEN</span>
+</header>
+
+<main>
+  <div id="gate">
+    <p>The calendar was keeping one last birthday wish. Type the whole message you found there.</p>
+    <input class="txt" id="key" maxlength="24" autocomplete="off" spellcheck="false"
+           placeholder="the message…" aria-label="message found in the calendar">
+  </div>
+  <div id="book"></div>
+</main>
+
+<p id="msg"></p>
+
+<script>
+const CONFIG = { ENTRY:"HAPPYEVERYDAY", NEXT_URL:"" };
+const norm = v => (v||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+
+const CH = [
+
+{ tag:"CHAPTER I — MECHANISM", title:"The Sorting Floor",
+  prose:`<p>Eleven years ago somebody posted a letter to this building. It arrived. It was
+  scanned, stamped, weighed, and dropped into the machine on the sorting floor. Then it stopped
+  existing, which is a thing letters are not supposed to do.</p>
+  <p>The machine is still down there. Three gears and a belt. The belt is <i>crossed</i> — someone
+  put it back wrong, years ago, and nobody noticed. Whichever way the last wheel turns decides which
+  chute a letter falls down: one goes to the vans, one goes to the boxes in the lobby.</p>`,
+  extra:`<svg class="gears" viewBox="0 0 400 130" aria-hidden="true">
+    <circle class="g drive" cx="55" cy="65" r="32"/><circle class="g" cx="127" cy="65" r="40"/>
+    <circle class="g" cx="205" cy="65" r="38"/><circle class="g" cx="340" cy="65" r="34"/>
+    <path class="belt" d="M205,27 C260,27 285,103 340,103 M205,103 C260,103 285,27 340,27"/>
+    <text x="42" y="112">A</text><text x="120" y="118">B</text><text x="198" y="115">C</text>
+    <text x="333" y="115">D</text>
+    <text x="14" y="26">driven clockwise</text><text x="300" y="26">the chute</text>
+  </svg>`,
+  q:"A is driven clockwise. Which way does D turn?",
+  type:"opts", opts:["CLOCKWISE","COUNTER-CLOCKWISE","IT DOES NOT TURN"], a:"COUNTER-CLOCKWISE",
+  verdict:`<p>Meshed teeth reverse; a crossed belt reverses again. A clockwise, B counter, C clockwise,
+  D counter. Counter is the lobby chute.</p><p>So it never left the building.</p>` },
+
+{ tag:"CHAPTER II — CHEMISTRY", title:"The Residue",
+  prose:`<p>There is a copy of the delivery docket in the basement file. The flap of the envelope
+  left a mark on it — a smear the lab was happy to run for me, mostly because nobody has asked them
+  for anything in years.</p>
+  <p>They sent back four numbers and no explanation. Analysts think this is funny.</p>`,
+  extra:`<div class="evi">SPECTROMETRY · TRACE FILM ON GUM ARABIC<br>
+    <b>6 · 18 · 5 · 8 · 7</b><br>read in order, by symbol</div>`,
+  q:"What was on the flap?",
+  type:"text", a:"CARBON", ph:"one word",
+  verdict:`<p>Atomic numbers six, eighteen, five, eight, seven. C, Ar, B, O, N.</p>
+  <p>Carbon paper. Which means that when the letter was written, it was written <i>twice</i> —
+  and somewhere there is a second sheet that nobody ever posted.</p>` },
+
+{ tag:"CHAPTER III — BIOLOGY", title:"The Second Sheet",
+  prose:`<p>I found it inside the docket file, folded to the size of a stamp. The carbon copy.
+  Most of it has gone grey and unreadable, but along the bottom margin someone has written out a
+  strand of mRNA by hand, in very small capitals, the way people write when they are enjoying
+  themselves.</p>
+  <p>Four codons. Translate them and take the one-letter code for each amino acid.</p>`,
+  extra:`<div class="evi"><b>AUG · GCU · AUU · CUU</b></div>
+    <table><tr><th>codon</th><th>amino acid</th><th>letter</th></tr>
+    <tr><td>AUG</td><td>Methionine</td><td>M</td></tr>
+    <tr><td>GCU</td><td>Alanine</td><td>A</td></tr>
+    <tr><td>AUU</td><td>Isoleucine</td><td>I</td></tr>
+    <tr><td>CUU</td><td>Leucine</td><td>L</td></tr>
+    <tr><td>UGG</td><td>Tryptophan</td><td>W</td></tr>
+    <tr><td>GAA</td><td>Glutamate</td><td>E</td></tr></table>`,
+  q:"What does the strand spell?",
+  type:"text", a:"MAIL", ph:"four letters",
+  verdict:`<p>M-A-I-L. Whoever wrote that letter knew it might not arrive, and left a joke in the
+  margin for whoever came looking. Eleven years is a long time to hold a punchline.</p>` },
+
+{ tag:"CHAPTER IV — GEOGRAPHY", title:"Where It Was Going",
+  prose:`<p>The docket has a destination field. Somebody — the same small capitals — filled it in
+  with coordinates instead of an address, which is either paranoia or showing off.</p>`,
+  extra:`<div class="evi">DESTINATION<br><b>42.3601° N &nbsp; 71.0589° W</b></div>`,
+  q:"Which city?",
+  type:"text", a:"BOSTON", alt:["BOSTONMA","BOSTONMASSACHUSETTS"], ph:"city",
+  verdict:`<p>Boston. Of course it is. The letter never travelled more than four hundred metres
+  from the desk it was written on.</p>` },
+
+{ tag:"CHAPTER V — LITERATURE", title:"The Book on the Desk",
+  prose:`<p>The last thing in the file is a photograph of the sender's desk, taken by a clerk who
+  clearly had no idea what he was documenting. A blotter, a cold cup of something, and a novel lying
+  face down and open — a whole book that happens across one June day in London, following a woman
+  out to buy flowers for a party she is giving that evening, while the hours go off one by one
+  somewhere over the city.</p>
+  <p>The clerk photographed the spine.</p>`,
+  q:"Which novel?",
+  type:"text", a:"MRSDALLOWAY", alt:["DALLOWAY","MRSDALLOWAYVIRGINIAWOOLF"], ph:"title",
+  verdict:`<p><i>Mrs Dalloway.</i> A book about a day that will not stop arriving.</p>
+  <p>Whoever posted that letter chose the reference on purpose. They expected it to be read late.</p>` },
+
+{ tag:"CHAPTER VI — DEDUCTION", title:"The Brass Doors",
+  prose:`<p>Which leaves the lobby. Downstairs, the wall of small brass doors, most of them with
+  nothing behind them but takeaway menus.</p>
+  <p>One of them has a four-digit dial instead of a keyhole. The building manager kept a log of
+  every attempt the previous tenant made on it before giving up. Four different digits, no repeats.
+  The dial reports how close you were: <i>set</i> means right digit in the right position,
+  <i>loose</i> means right digit in the wrong position.</p>`,
+  extra:`<div class="evi">ATTEMPT LOG<br>
+    <b>9 8 5 3</b> &nbsp; 2 set · 1 loose<br>
+    <b>3 0 7 4</b> &nbsp; 1 set · 0 loose<br>
+    <b>9 1 3 0</b> &nbsp; 0 set · 2 loose</div>`,
+  q:"Open it.",
+  type:"mm", a:"3851",
+  verdict:`<p>Three, eight, five, one. The door gives with that small brass sound doors make when
+  they have been shut for a very long time.</p>
+  <p>It is still in there. Nobody ever came down for it.</p>` }
+];
+
+const $=s=>document.getElementById(s);
+let idx=0, solvedCount=0;
+
+function render(i){
+  const c=CH[i];
+  const d=document.createElement("section");
+  d.className="ch"; d.id="ch"+i;
+  let control="";
+  if(c.type==="opts"){
+    control=`<div class="opts">`+c.opts.map((o,k)=>
+      `<button class="opt" data-o="${o}">${o}</button>`).join("")+`</div>`;
+  } else if(c.type==="text"){
+    control=`<div class="row"><input class="txt" id="in${i}" maxlength="30" autocomplete="off"
+      spellcheck="false" placeholder="${c.ph||""}" aria-label="answer">
+      <button class="go" id="go${i}">SUBMIT</button></div>`;
+  } else if(c.type==="mm"){
+    control=`<div id="hist"></div><div class="row">
+      <input class="txt dial" id="in${i}" maxlength="4" inputmode="numeric" autocomplete="off"
+        placeholder="····" aria-label="four digits">
+      <button class="go" id="go${i}">TRY</button></div>`;
+  }
+  d.innerHTML=`<div class="tag">${c.tag}</div><h2>${c.title}</h2>
+    <div class="prose">${c.prose}</div>${c.extra||""}
+    <div class="q">${c.q}</div>${control}
+    <div class="verdict">${c.verdict}</div>`;
+  $("book").appendChild(d);
+  requestAnimationFrame(()=>d.classList.add("on"));
+
+  if(c.type==="opts"){
+    d.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+      if(b.dataset.o===c.a) pass(i);
+      else { b.classList.add("no"); b.disabled=true; }
+    });
+  } else if(c.type==="text"){
+    const go=()=>{
+      const v=norm($("in"+i).value);
+      const ok=v===c.a || (c.alt||[]).includes(v);
+      if(ok) pass(i); else bad($("in"+i));
+    };
+    $("go"+i).onclick=go;
+    $("in"+i).addEventListener("keydown",e=>{if(e.key==="Enter")go()});
+  } else if(c.type==="mm"){
+    const go=()=>{
+      const v=norm($("in"+i).value);
+      if(!/^\d{4}$/.test(v)||new Set(v).size<4){ bad($("in"+i)); return; }
+      const s=c.a;
+      const set=[...v].filter((x,k)=>x===s[k]).length;
+      const loose=[...new Set(v)].filter(x=>s.includes(x)).length-set;
+      $("hist").innerHTML+=`<div><span>${v.split("").join(" ")}</span> &nbsp;
+        <em>${set} set · ${loose} loose</em></div>`;
+      $("in"+i).value="";
+      if(set===4) pass(i);
+    };
+    $("go"+i).onclick=go;
+    $("in"+i).addEventListener("keydown",e=>{if(e.key==="Enter")go()});
+  }
+  d.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function bad(el){ el.classList.add("bad"); setTimeout(()=>el.classList.remove("bad"),400); }
+
+function pass(i){
+  const d=$("ch"+i);
+  if(d.classList.contains("solved")) return;
+  d.classList.add("solved");
+  solvedCount++;
+  $("score").textContent="CHAPTER "+solvedCount+" / "+CH.length;
+  if(i+1<CH.length){ idx=i+1; setTimeout(()=>render(idx),900); }
+  else setTimeout(end,1400);
+}
+
+function end(){
+  $("score").textContent="CASE CLOSED";
+  const d=document.createElement("section");
+  d.className="ch on";
+  d.innerHTML=`<div class="tag">EVIDENCE · FINAL</div>
+    <div class="prose"><p>Go down. Second wall from the door, the row of small brass doors.</p>
+    <p>It has been waiting eleven years. Another ten minutes will not hurt it, but it would be
+    a shame to make it wait through a birthday as well.</p></div>`;
+  if(CONFIG.NEXT_URL){
+    const a=document.createElement("a");
+    a.href=CONFIG.NEXT_URL;a.className="ghost";a.textContent="GOT IT →";
+    d.appendChild(a);
+  }
+  $("book").appendChild(d);
+  d.scrollIntoView({behavior:"smooth",block:"center"});
+}
+
+/* ── gate ── */
+function open(){
+  if($("gate").style.display==="none") return;
+  $("gate").style.display="none";
+  $("msg").textContent="Six chapters. Each one is locked by the thing it is about.";
+  render(0);
+}
+$("key").addEventListener("input",e=>{ if(norm(e.target.value)===CONFIG.ENTRY) open(); });
+
+/* ── dev skip · press S, or tap STATION three times. Delete before sending. ── */
+function skip(){
+  if($("gate").style.display!=="none"){ open(); return; }
+  pass(idx);
+}
+addEventListener("keydown",e=>{
+  if(document.activeElement.tagName==="INPUT") return;
+  if(e.key==="s"||e.key==="S") skip();
+});
+let taps=0,tt;
+document.querySelector(".eyebrow").addEventListener("click",()=>{
+  clearTimeout(tt); if(++taps>=3){taps=0;skip();} tt=setTimeout(()=>taps=0,600);
+});
+</script>
+</body>
+</html>

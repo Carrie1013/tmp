@@ -1,0 +1,155 @@
+:root {
+  --ink: #fff8f3 !important;
+  --amber: #e45f86 !important;
+  --mist: #4b3152 !important;
+  --dim: #8c718d !important;
+  --line: #e8cad8 !important;
+  --cell: #fffdfb !important;
+  --kraft: #f5d9df !important;
+}
+
+html { min-height: 100%; background: #fff8f3; }
+
+body {
+  position: relative;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(255, 203, 218, .65), transparent 27%),
+    radial-gradient(circle at 88% 18%, rgba(216, 207, 255, .62), transparent 28%),
+    radial-gradient(circle at 50% 92%, rgba(255, 226, 170, .45), transparent 30%),
+    linear-gradient(155deg, #fffaf6 0%, #fff5f7 54%, #f8f4ff 100%) !important;
+  color: var(--mist) !important;
+}
+
+body::before,
+body::after {
+  content: "✦  ·  ♡  ·  ✦";
+  position: fixed;
+  z-index: -1;
+  color: rgba(228, 95, 134, .17);
+  font-family: Georgia, serif;
+  font-size: clamp(22px, 4vw, 46px);
+  letter-spacing: .48em;
+  pointer-events: none;
+  transform: rotate(-12deg);
+}
+body::before { top: 8%; left: -1.5em; }
+body::after { right: -1.5em; bottom: 8%; transform: rotate(12deg); }
+
+header {
+  padding: 10px 12px;
+  border: 1px solid rgba(232, 202, 216, .9);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .58);
+  box-shadow: 0 10px 35px rgba(97, 55, 89, .07);
+  backdrop-filter: blur(10px);
+}
+
+.eyebrow {
+  color: #d94f79 !important;
+  cursor: default;
+  user-select: none;
+}
+
+.counter { color: #967b96 !important; }
+
+main,
+#board,
+#nono,
+#bar,
+#msg { position: relative; z-index: 1; }
+
+main > section,
+#gate,
+#body,
+#wrap,
+#nono.on,
+#out.on,
+#done.on {
+  border-radius: 22px;
+}
+
+#gate,
+.seg.on,
+.ch.on,
+#done.on {
+  padding: clamp(20px, 5vw, 32px);
+  border: 1px solid rgba(232, 202, 216, .92);
+  background: rgba(255, 255, 255, .7);
+  box-shadow: 0 22px 65px rgba(95, 58, 93, .09);
+  backdrop-filter: blur(12px);
+}
+
+h1, h2, .intro, #out .line {
+  color: #56324f !important;
+  text-wrap: balance;
+}
+
+.lead, .sub, #gate p, .prose, .q, li, #msg, #out .tail, #done .tail {
+  color: #765f77 !important;
+}
+
+input.txt,
+input.num,
+.coordrow input,
+.sq,
+.chip,
+.note,
+.cell,
+#lamp,
+.lamp2,
+.evi,
+#hist div {
+  background-color: rgba(255, 253, 251, .88) !important;
+  border-color: var(--line) !important;
+  color: var(--mist) !important;
+}
+
+input::placeholder { color: #bba8b6 !important; }
+
+button.go,
+button.ghost,
+a.ghost,
+.opt {
+  border-color: #e4b7ca !important;
+  border-radius: 999px !important;
+  color: #b83f68 !important;
+  background: rgba(255, 255, 255, .72) !important;
+  box-shadow: 0 7px 20px rgba(119, 55, 89, .06);
+  transition: transform .16s ease, box-shadow .16s ease, background .16s ease !important;
+}
+
+button.go:hover,
+button.ghost:hover,
+a.ghost:hover,
+.opt:hover {
+  transform: translateY(-1px);
+  background: #fff !important;
+  box-shadow: 0 10px 24px rgba(119, 55, 89, .12);
+}
+
+.tag { color: #d94f79 !important; }
+.verdict { color: #b83f68 !important; border-color: #df6c91 !important; }
+.lamp-core { background: #f2dce6 !important; }
+.lamp-core.hi { background: #f7a9bf !important; box-shadow: 0 0 40px 8px rgba(228,95,134,.38) !important; }
+.frame, .cal, #grid, #ngrid { border-color: var(--line) !important; box-shadow: 0 18px 50px rgba(95,58,93,.10) !important; }
+.frame { border-radius: 12px !important; }
+.frame .date { background: linear-gradient(transparent, rgba(80,42,72,.88)) !important; color: #fff5c7 !important; }
+.cal .m { background: #e46b8c !important; }
+.cal .d, .cal .w { background: #fffdfb !important; }
+.sq.blk, #ngrid { background: #ead6df !important; }
+.sq.cur { background: #efd8e6 !important; }
+.sq.beam { background: #f8eaf1 !important; }
+.cell.fill { background: #8f7095 !important; }
+#ngrid.solved .cell.fill { background: #e36f93 !important; }
+
+@media (max-width: 560px) {
+  header { padding: 9px 11px; }
+  #gate, .seg.on, .ch.on, #done.on { border-radius: 18px; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body::before { animation: birthdayFloat 8s ease-in-out infinite; }
+  body::after { animation: birthdayFloat 9s ease-in-out infinite reverse; }
+  @keyframes birthdayFloat { 50% { translate: 0 12px; } }
+}
